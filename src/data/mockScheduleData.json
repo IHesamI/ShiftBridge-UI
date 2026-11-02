@@ -1,0 +1,61 @@
+{
+  "scenario": {
+    "id": "scenario_01",
+    "affectedWorkerId": "w1",
+    "affectedWorkerName": "Sarah Jenkins",
+    "conflictDay": "Wednesday",
+    "originalShift": "08:00 - 16:00",
+    "reason": "Childcare fell through night before",
+    "constraint": "Cannot start until 12:00 PM on Wednesday",
+    "promptText": "My childcare fell through for Wednesday morning, and I can't start until 12:00 PM."
+  },
+  "workers": [
+    { "id": "w1", "name": "Sarah Jenkins", "role": "Senior RN", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" },
+    { "id": "w2", "name": "David Miller", "role": "RN", "maxHours": 40, "currentHours": 32, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=David" },
+    { "id": "w3", "name": "Elena Rostova", "role": "RN", "maxHours": 40, "currentHours": 36, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Elena" },
+    { "id": "w4", "name": "Marcus Vance", "role": "Charge Nurse", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Marcus" },
+    { "id": "w5", "name": "Aaliyah Khan", "role": "LPN", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Aaliyah" },
+    { "id": "w6", "name": "Carlos Gomez", "role": "RN", "maxHours": 40, "currentHours": 24, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Carlos" },
+    { "id": "w7", "name": "Emily Chen", "role": "Senior RN", "maxHours": 40, "currentHours": 36, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Emily" },
+    { "id": "w8", "name": "James Wilson", "role": "LPN", "maxHours": 32, "currentHours": 32, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=James" },
+    { "id": "w9", "name": "Priya Patel", "role": "RN", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Priya" },
+    { "id": "w10", "name": "Jordan Taylor", "role": "Support Tech", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan" },
+    { "id": "w11", "name": "Hannah Abbott", "role": "LPN", "maxHours": 40, "currentHours": 28, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Hannah" },
+    { "id": "w12", "name": "Robert Kim", "role": "RN", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Robert" },
+    { "id": "w13", "name": "Maya Lin", "role": "Support Tech", "maxHours": 30, "currentHours": 24, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Maya" },
+    { "id": "w14", "name": "Liam O'Connor", "role": "RN", "maxHours": 40, "currentHours": 36, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Liam" },
+    { "id": "w15", "name": "Samantha Reed", "role": "Senior RN", "maxHours": 40, "currentHours": 40, "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Samantha" }
+  ],
+  "aiProposals": [
+    {
+      "optionId": "opt_A",
+      "title": "Option A: Full Shift Swap with David Miller",
+      "description": "David moves to Wednesday Morning (08:00 - 16:00). Sarah shifts to David's Friday Morning shift.",
+      "impact": {
+        "sarahHours": "40 hrs (No change)",
+        "davidHours": "32 hrs -> 40 hrs",
+        "coverageScore": "100% (Fully Covered)"
+      },
+      "updates": [
+        { "workerId": "w1", "day": "Wednesday", "shift": "OFF" },
+        { "workerId": "w1", "day": "Friday", "shift": "08:00 - 16:00" },
+        { "workerId": "w2", "day": "Wednesday", "shift": "08:00 - 16:00" },
+        { "workerId": "w2", "day": "Friday", "shift": "OFF" }
+      ]
+    },
+    {
+      "optionId": "opt_B",
+      "title": "Option B: Late Start + Partial Shift Coverage",
+      "description": "Sarah works Wednesday 12:00 - 16:00 (4 hrs). Elena Rostova covers 08:00 - 12:00 (4 hrs).",
+      "impact": {
+        "sarahHours": "36 hrs (-4 hrs)",
+        "elenaHours": "40 hrs (+4 hrs)",
+        "coverageScore": "100% (Fully Covered)"
+      },
+      "updates": [
+        { "workerId": "w1", "day": "Wednesday", "shift": "12:00 - 16:00" },
+        { "workerId": "w3", "day": "Wednesday", "shift": "08:00 - 16:00" }
+      ]
+    }
+  ]
+}
