@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, Sparkles, Clock, ArrowRight, CheckCircle2, Calendar } from 'lucide-react';
+import { ShieldCheck, UserCheck, ArrowRight, Calendar } from 'lucide-react';
 import type { Worker } from '../types';
 
 interface AuthCardProps {
@@ -34,19 +34,12 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
 
       {/* Brand Header */}
       <div className="text-center mb-8 relative z-10">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-400/20 text-indigo-300 text-xs font-semibold mb-3">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-          Caregiver Shift Conflict Resolution Engine
-        </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center justify-center gap-2.5">
           <span className="p-2 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/30">
             <Calendar className="w-7 h-7 text-white" />
           </span>
-          ShiftBridge<span className="text-indigo-400">.ai</span>
+          ShiftBridge
         </h1>
-        <p className="mt-2 text-sm text-slate-400 max-w-md mx-auto">
-          Intelligent, empathetic shift rescheduling powered by predictive staffing & instant peer swaps.
-        </p>
       </div>
 
       {/* Main Authentication Card */}
@@ -174,22 +167,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
             </button>
           </form>
 
-          {/* Value proposition pill */}
-          <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              Real-time Schedule Sync
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-indigo-500" />
-              Childcare Protection
-            </span>
-          </div>
         </div>
-      </div>
-
-      <div className="mt-8 text-center text-xs text-slate-500">
-        ShiftBridge MVP • Built for Healthcare & Frontline Caregiver Resilience
       </div>
     </div>
   );

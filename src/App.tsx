@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { Worker, ScheduleMap, AiProposal } from './types';
 import {
   INITIAL_WORKERS,
@@ -39,6 +39,36 @@ export default function App() {
     applied: false,
     selectedOption: null
   });
+
+  // Resizable Chat Section State (Task 3)
+  const [chatWidth, setChatWidth] = useState<number>(440);
+  const isDraggingRef = useRef(false);
+
+  const startResizing = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDraggingRef.current = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    const handleMouseMove = (moveEvent: MouseEvent) => {
+      if (!isDraggingRef.current) return;
+      // Clamp chat width between 300px and 750px, also considering window width
+      const maxWidth = Math.min(800, window.innerWidth - 450);
+      const newWidth = Math.max(300, Math.min(maxWidth, moveEvent.clientX));
+      setChatWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      isDraggingRef.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+  }, []);
 
   // Keep browser history and URL in sync with state
   useEffect(() => {
@@ -172,8 +202,12 @@ export default function App() {
 
       {/* Main Split Screen Layout */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-[calc(100vh-64px)]">
-        {/* Left Section: ShiftBridge AI Assistant (Width 400px - 440px on desktop) */}
-        <div className="w-full lg:w-[420px] xl:w-[450px] flex-shrink-0 h-[480px] lg:h-full border-b lg:border-b-0">
+        {/* Left Section: ShiftBridge AI Assistant (Resizable on desktop) */}
+        <div
+          style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${chatWidth}px` : undefined }}
+          className="w-full lg:w-auto lg:flex-shrink-0 h-[480px] lg:h-full border-b lg:border-b-0 relative"
+          data-testid="sidebar-chat-container"
+        >
           <SidebarChat
             currentUser={currentUser}
             currentRole={currentRole}
@@ -187,12 +221,27 @@ export default function App() {
           />
         </div>
 
+        {/* Resizer Handle (Desktop only) */}
+        <div
+          onMouseDown={startResizing}
+          data-testid="chat-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          tabIndex={0}
+          title="Drag to resize chat panel"
+          className="hidden lg:flex w-2 hover:w-2.5 bg-slate-200/80 hover:bg-indigo-400 active:bg-indigo-600 transition-all cursor-col-resize items-center justify-center flex-shrink-0 z-20 group select-none"
+        >
+          <div className="w-0.5 h-8 bg-slate-400 group-hover:bg-white rounded-full transition-colors" />
+        </div>
+
         {/* Right Section: Interactive 7-Day Calendar & Shift Grid */}
         <div className="flex-1 h-full min-w-0">
           <CalendarGrid
             workers={workers}
             schedule={schedule}
             appliedProposalTitle={appliedProposalTitle}
+            currentUser={currentUser}
+            currentRole={currentRole}
           />
         </div>
       </main>

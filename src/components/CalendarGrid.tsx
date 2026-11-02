@@ -17,23 +17,34 @@ interface CalendarGridProps {
   selectedDay?: DayOfWeek;
   onSelectShift?: (worker: Worker, day: DayOfWeek, shift: ShiftInfo) => void;
   appliedProposalTitle?: string | null;
+  currentUser?: Worker;
+  currentRole?: 'worker' | 'manager';
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
   workers,
   schedule,
-  appliedProposalTitle
+  appliedProposalTitle,
+  currentUser,
+  currentRole = 'worker'
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('ALL');
   const [activeShiftDetail, setActiveShiftDetail] = useState<{
     worker: Worker;
     day: DayOfWeek;
     shift: ShiftInfo;
   } | null>(null);
 
-  // Filter workers based on search query & role
-  const filteredWorkers = workers.filter((worker) => {
+  // Filter workers based on current role and selection
+  // Task 1: For the worker don't show the details of other workers, only show his/her own working schedule.
+  // And the manager must be able to select each worker or all of them at once.
+  const roleFilteredWorkers = currentRole === 'worker'
+    ? (currentUser ? workers.filter((w) => w.id === currentUser.id) : workers.slice(0, 1))
+    : (selectedWorkerId === 'ALL' ? workers : workers.filter((w) => w.id === selectedWorkerId));
+
+  const filteredWorkers = roleFilteredWorkers.filter((worker) => {
     const matchesQuery =
       worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -122,10 +133,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-              7-Day Staff Schedule (Mon – Sun)
+              {currentRole === 'worker' ? 'My Weekly Schedule' : 'Staff Schedule'}
             </h2>
             <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700">
-              15 Active Personnel
+              {currentRole === 'worker' ? 'Personal View' : `${filteredWorkers.length} Personnel`}
             </span>
             {appliedProposalTitle && (
               <span className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
@@ -134,39 +145,59 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
-            Real-time schedule synchronization with automated caregiving swap coverage.
-          </p>
         </div>
 
         {/* Filter & Search Bar */}
         <div className="flex items-center gap-2.5 w-full lg:w-auto">
-          <div className="relative flex-1 lg:w-48">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search worker..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
-          </div>
+          {currentRole === 'manager' && (
+            <div className="relative">
+              <select
+                value={selectedWorkerId}
+                onChange={(e) => setSelectedWorkerId(e.target.value)}
+                data-testid="manager-worker-select"
+                aria-label="Filter by Worker"
+                className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="ALL">All Workers ({workers.length})</option>
+                {workers.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name} ({w.role})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          <div className="relative">
-            <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-            <select
-              value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
-              className="pl-8 pr-6 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-            >
-              <option value="ALL">All Roles</option>
-              <option value="Senior RN">Senior RN</option>
-              <option value="Charge Nurse">Charge Nurse</option>
-              <option value="RN">RN</option>
-              <option value="LPN">LPN</option>
-              <option value="Support Specialist">Support Specialist</option>
-            </select>
-          </div>
+          {currentRole === 'manager' && (
+            <div className="relative flex-1 lg:w-44">
+              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Search worker..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+          )}
+
+          {currentRole === 'manager' && (
+            <div className="relative">
+              <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+              <select
+                value={selectedRole}
+                onChange={(e) => setSelectedRole(e.target.value)}
+                className="pl-8 pr-6 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+              >
+                <option value="ALL">All Roles</option>
+                <option value="Senior RN">Senior RN</option>
+                <option value="Charge Nurse">Charge Nurse</option>
+                <option value="RN">RN</option>
+                <option value="LPN">LPN</option>
+                <option value="Support Specialist">Support Specialist</option>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

@@ -140,12 +140,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           <div>
             <div className="font-semibold text-sm text-slate-900 flex items-center gap-1.5">
               ShiftBridge AI
-              <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Active Assistant
-              </span>
             </div>
-            <div className="text-xs text-slate-500">Caregiver Conflict & Schedule Co-Pilot</div>
           </div>
         </div>
 
@@ -193,7 +188,9 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           return (
             <div
               key={msg.id}
-              className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}
+              className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'} ${
+                !isUser ? 'animate-agent-message' : ''
+              }`}
             >
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 text-white text-xs ${
@@ -208,7 +205,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
                   className={`p-3.5 rounded-2xl text-sm leading-relaxed ${
                     isUser
                       ? 'bg-indigo-600 text-white rounded-br-none shadow-sm'
-                      : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/60'
+                      : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/60 shadow-2xs'
                   }`}
                 >
                   <p>{msg.text}</p>
@@ -217,7 +214,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
                 {/* AI Resolution Option Cards */}
                 {msg.options && (
                   <div className="mt-3 space-y-3 pt-1">
-                    {msg.options.map((opt) => {
+                    {msg.options.map((opt, optIndex) => {
                       const isOptionApplied =
                         approvalStatus.applied && approvalStatus.selectedOption === opt.optionId;
                       const isOptionPending =
@@ -226,7 +223,8 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
                       return (
                         <div
                           key={opt.optionId}
-                          className={`p-4 rounded-xl border transition-all text-left ${
+                          style={{ animationDelay: `${(optIndex + 1) * 120}ms` }}
+                          className={`p-4 rounded-xl border transition-all text-left animate-proposal-card ${
                             isOptionApplied
                               ? 'bg-emerald-50/70 border-emerald-300 ring-1 ring-emerald-400'
                               : isOptionPending
