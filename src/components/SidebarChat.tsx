@@ -58,18 +58,13 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           text: `Hello ${currentUser.name}! I am ShiftBridge AI. I continuously monitor staff availability, qualifications, and shifts to resolve sudden caregiving disruptions with zero patient coverage loss.`,
           timestamp: 'Just now'
         },
-        {
-          id: 'msg_disruption_alert',
-          sender: 'system',
-          text: `⚠️ Scheduled Alert: Sarah Jenkins flagged an urgent childcare conflict for Wednesday morning (08:00 - 16:00 shift).`,
-          timestamp: 'Just now'
-        }
+        
       ];
     });
   }, [currentUser]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', });
   };
 
   useEffect(() => {
@@ -106,7 +101,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
         const assistantMessage: ChatMessage = {
           id: `ai_${Date.now()}`,
           sender: 'assistant',
-          text: `I've analyzed Sarah's schedule constraint against team competencies, weekly hour limits (max 40h), and unit staffing minimums. Here are 2 balanced resolution options:`,
+          text: `I've analyzed your schedule constraint against team competencies, weekly hour limits (max 40h), and unit staffing minimums. Here are 2 balanced resolution options:`,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           options: aiProposals
         };
@@ -126,7 +121,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
   const quickPrompts = [
     scenario.promptText,
     "Show available qualified coverage for Wednesday",
-    "Evaluate overtime risk for Sarah's swap"
+    "Evaluate overtime risk for me"
   ];
 
   return (
@@ -154,7 +149,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
       </div>
 
       {/* Disruption Alert Banner */}
-      <div className="px-4 py-3 bg-amber-50/90 border-b border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5">
+      {/* <div className="px-4 py-3 bg-amber-50/90 border-b border-amber-200/80 text-amber-900 text-xs flex items-start gap-2.5">
         <div className="p-1 bg-amber-200 text-amber-800 rounded-lg flex-shrink-0 mt-0.5">
           <Clock className="w-3.5 h-3.5" />
         </div>
@@ -167,7 +162,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
             <strong>Sarah Jenkins:</strong> "{scenario.constraint}"
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

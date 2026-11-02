@@ -212,7 +212,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-amber-100 border border-amber-400" />
-          <span className="font-medium text-amber-800">Childcare Conflict Flag</span>
+          <span className="font-medium text-amber-800">Conflict Flag</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
