@@ -63,13 +63,13 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
     });
   }, [currentUser]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', });
-  };
+  // const scrollToBottom = () => {
+  //   messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', });
+  // };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, [messages, isTyping]);
 
   const handleSendPrompt = (text: string) => {
     if (!text.trim()) return;
