@@ -1,6 +1,6 @@
 import type { Worker, ScheduleMap, AiProposal, Scenario } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = 'http://localhost:8000';
 
 export const api = {
   getWorkers: async (): Promise<Worker[]> => {
