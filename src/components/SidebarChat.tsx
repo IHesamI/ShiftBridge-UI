@@ -16,7 +16,7 @@ import type { ChatMessage, AiProposal, Worker, Scenario } from '../types';
 interface SidebarChatProps {
   currentUser: Worker;
   currentRole: 'worker' | 'manager';
-  scenario: Scenario;
+  scenario: Scenario | null;
   aiProposals: AiProposal[];
   onApplyProposal: (proposal: AiProposal) => void;
   onRequestApproval: (proposal: AiProposal) => void;
@@ -118,11 +118,13 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
     }, 1100);
   };
 
-  const quickPrompts = [
-    scenario.promptText,
-    "Show available qualified coverage for Wednesday",
-    "Evaluate overtime risk for me"
-  ];
+  const quickPrompts = scenario
+    ? [
+        scenario.promptText,
+        "Show available qualified coverage for Wednesday",
+        "Evaluate overtime risk for me"
+      ]
+    : ["Show available qualified coverage"];
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
@@ -387,7 +389,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={`Type a request (e.g. "${scenario.promptText}")`}
+          placeholder={`Type a request (e.g. "${scenario?.promptText || '...'}")`}
           className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
         />
         <button

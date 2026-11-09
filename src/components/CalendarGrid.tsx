@@ -9,7 +9,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import type { Worker, DayOfWeek, ScheduleMap, ShiftInfo } from '../types';
-import { DAYS_OF_WEEK } from '../data/mockData';
+import { DAYS_OF_WEEK } from '../types';
 
 interface CalendarGridProps {
   workers: Worker[];
@@ -233,7 +233,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <th className="py-3 px-4 text-xs font-bold uppercase tracking-wider w-64 border-r border-slate-200">
                 Worker / Qualifications
               </th>
-              {DAYS_OF_WEEK.map((day) => {
+              {DAYS_OF_WEEK.map((day: DayOfWeek) => {
                 const isWednesday = day === 'Wednesday';
                 return (
                   <th
@@ -263,7 +263,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           <tbody className="divide-y divide-slate-200 text-xs">
             {filteredWorkers.map((worker) => {
               const workerSchedule = schedule[worker.id] || {};
-              const currentTotalHours = DAYS_OF_WEEK.reduce((total, day) => {
+              const currentTotalHours = DAYS_OF_WEEK.reduce((total: number, day: DayOfWeek) => {
                 const shift = workerSchedule[day];
                 return total + (shift ? shift.hours : 0);
               }, 0);
@@ -301,7 +301,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   </td>
 
                   {/* 7 Day Shift Cells */}
-                  {DAYS_OF_WEEK.map((day) => {
+                  {DAYS_OF_WEEK.map((day: DayOfWeek) => {
                     const shift = workerSchedule[day] || {
                       id: `${worker.id}-${day}`,
                       type: 'off',

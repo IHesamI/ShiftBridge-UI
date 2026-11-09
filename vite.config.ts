@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react(),
       tailwindcss(),
   ],
-  base: '/ShiftBridge-UI',
+  base: '/',
   build: {
     outDir: 'build'
   }

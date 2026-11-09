@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Worker, ScheduleMap, AiProposal } from './types';
-import {
-  INITIAL_WORKERS,
-  INITIAL_SCENARIO,
-  buildInitialSchedule,
-  AI_PROPOSALS
-} from './data/mockData';
+import type { Worker, ScheduleMap, AiProposal, Scenario } from './types';
+import { api } from './services/api';
 import { AuthCard } from './components/AuthCard';
 import { Header } from './components/Header';
 import { SidebarChat } from './components/SidebarChat';
@@ -19,11 +14,32 @@ export default function App() {
 
   // Current session user and role
   const [currentRole, setCurrentRole] = useState<'worker' | 'manager'>('worker');
-  const [currentUser, setCurrentUser] = useState<Worker>(INITIAL_WORKERS[0]); // Sarah Jenkins
+  const [currentUser, setCurrentUser] = useState<Worker | null>(null); // Sarah Jenkins
 
   // Core Schedule State
-  const [workers, setWorkers] = useState<Worker[]>(INITIAL_WORKERS);
-  const [schedule, setSchedule] = useState<ScheduleMap>(buildInitialSchedule);
+  const [workers, setWorkers] = useState<Worker[]>([]);
+  const [schedule, setSchedule] = useState<ScheduleMap>({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [fetchedWorkers, fetchedSchedule, fetchedScenario, fetchedProposals] = await Promise.all([
+          api.getWorkers(),
+          api.getSchedule(),
+          api.getScenario(),
+          api.getProposals(),
+        ]);
+        setWorkers(fetchedWorkers);
+        setSchedule(fetchedSchedule);
+        setScenario(fetchedScenario);
+        setAiProposals(fetchedProposals);
+        setCurrentUser(fetchedWorkers[0]);
+      } catch (error) {
+        console.error('Failed to fetch initial data:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Approval and AI Resolution State
   const [pendingProposalId, setPendingProposalId] = useState<'opt_A' | 'opt_B' | null>(null);
@@ -39,6 +55,8 @@ export default function App() {
     applied: false,
     selectedOption: null
   });
+  const [scenario, setScenario] = useState<Scenario | null>(null);
+  const [aiProposals, setAiProposals] = useState<AiProposal[]>([]);
 
   // Resizable Chat Section State (Task 3)
   const [chatWidth, setChatWidth] = useState<number>(440);
@@ -115,17 +133,25 @@ export default function App() {
   };
 
   // Reset all scenario states
-  const handleResetData = () => {
-    setSchedule(buildInitialSchedule());
-    setWorkers(INITIAL_WORKERS);
-    setPendingProposalId(null);
-    setAppliedProposalTitle(null);
-    setApprovalStatus({
-      workerApproved: false,
-      managerApproved: false,
-      applied: false,
-      selectedOption: null
-    });
+  const handleResetData = async () => {
+    try {
+      const [fetchedWorkers, fetchedSchedule] = await Promise.all([
+        api.getWorkers(),
+        api.getSchedule(),
+      ]);
+      setWorkers(fetchedWorkers);
+      setSchedule(fetchedSchedule);
+      setPendingProposalId(null);
+      setAppliedProposalTitle(null);
+      setApprovalStatus({
+        workerApproved: false,
+        managerApproved: false,
+        applied: false,
+        selectedOption: null
+      });
+    } catch (error) {
+      console.error('Failed to reset data:', error);
+    }
   };
 
   // Worker initiates or signs off on approval
@@ -188,6 +214,10 @@ export default function App() {
     return <AuthCard onLogin={handleLogin} workers={workers} />;
   }
 
+  if (!currentUser) {
+    return null; // Or a loading spinner
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
       {/* Top Application Navigation */}
@@ -211,8 +241,8 @@ export default function App() {
           <SidebarChat
             currentUser={currentUser}
             currentRole={currentRole}
-            scenario={INITIAL_SCENARIO}
-            aiProposals={AI_PROPOSALS}
+            scenario={scenario}
+            aiProposals={aiProposals}
             onApplyProposal={handleApplyProposal}
             onRequestApproval={handleRequestApproval}
             pendingProposalId={pendingProposalId}
