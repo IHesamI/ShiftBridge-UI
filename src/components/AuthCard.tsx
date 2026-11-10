@@ -3,7 +3,7 @@ import { ShieldCheck, UserCheck, ArrowRight, Calendar } from 'lucide-react';
 import type { Worker } from '../types';
 
 interface AuthCardProps {
-  onLogin: (role: 'worker' | 'manager', worker: Worker) => void;
+  onLogin: (token: string, worker: Worker) => void;
   workers: Worker[];
 }
 
@@ -19,10 +19,10 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
     e.preventDefault();
     if (activeTab === 'worker') {
       const worker = workers.find((w) => w.id === selectedWorkerId) || sarah;
-      onLogin('worker', worker);
+      onLogin('dummy-token', worker);
     } else {
       const manager = workers.find((w) => w.id === selectedManagerId) || marcus;
-      onLogin('manager', manager);
+      onLogin('dummy-token', manager);
     }
   };
 
@@ -81,7 +81,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
             {activeTab === 'worker' ? (
               <button
                 type="button"
-                onClick={() => onLogin('worker', sarah)}
+                onClick={() => onLogin('dummy-token', sarah)}
                 className="w-full group text-left p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/60 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
@@ -105,7 +105,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
             ) : (
               <button
                 type="button"
-                onClick={() => onLogin('manager', marcus)}
+                onClick={() => onLogin('dummy-token', marcus)}
                 className="w-full group text-left p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/60 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">

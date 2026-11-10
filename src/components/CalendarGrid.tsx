@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  AlertTriangle,
   Sparkles,
   Search,
   Filter,
@@ -13,7 +12,7 @@ import { DAYS_OF_WEEK } from '../types';
 
 interface CalendarGridProps {
   workers: Worker[];
-  schedule: ShiftInfo[];
+  schedule: ScheduleMap;
   selectedDay?: DayOfWeek;
   onSelectShift?: (worker: Worker, day: DayOfWeek, shift: ShiftInfo) => void;
   appliedProposalTitle?: string | null;
@@ -235,9 +234,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           <tbody className="divide-y divide-slate-200 text-xs">
             {filteredWorkers.map((worker) => {
 
-              const workerSchedule = schedule.filter(item=>item.worker_id==worker.id) || [];
+              const workerScheduleMap = schedule[worker.id] || {};
               const currentTotalHours = DAYS_OF_WEEK.reduce((total: number, day: DayOfWeek) => {
-                const shift = workerSchedule.find(item=>item.day==day);
+                const shift = workerScheduleMap[day];
                 return total + (shift ? shift.hours : 0);
               }, 0);
 
@@ -274,11 +273,13 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   </td>
 
                   {DAYS_OF_WEEK.map((day: DayOfWeek) => {
-                    const shift:ShiftInfo = workerSchedule.find(item=>item.day==day)! || {
+                    const shift:ShiftInfo = workerScheduleMap[day] || {
                       id: `${worker.id}-${day}`,
                       type: 'off',
                       shiftTime: 'OFF',
-                      hours: 0
+                      hours: 0,
+                      worker_id: worker.id,
+                      day: day
                     };
 
                     return (

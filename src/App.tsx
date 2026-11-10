@@ -16,11 +16,33 @@ export default function App() {
   const [currentRole, setCurrentRole] = useState<'worker' | 'manager'>('worker');
   const [currentUser, setCurrentUser] = useState<Worker | null>(null); // Sarah Jenkins
 
+  useEffect(() => {
+    const checkAuth = async () => {
+        const token = localStorage.getItem('jwt');
+        if (!token) {
+            navigateTo('login');
+            return;
+        }
+
+        try {
+            const user = await api.getMe(token);
+            setCurrentUser(user);
+            setCurrentRole(user.id === 'w4' ? 'manager' : 'worker'); // Simple logic for demo
+            navigateTo('dashboard');
+        } catch (error) {
+            localStorage.removeItem('jwt');
+            navigateTo('login');
+        }
+    };
+    checkAuth();
+  }, []);
+
   // Core Schedule State
   const [workers, setWorkers] = useState<Worker[]>([]);
   const [schedule, setSchedule] = useState<ScheduleMap>({});
 
   useEffect(() => {
+    if (currentPage !== 'dashboard') return;
     const fetchData = async () => {
       try {
         const [fetchedWorkers, fetchedSchedule, fetchedProposals] = await Promise.all([
@@ -31,13 +53,12 @@ export default function App() {
         setWorkers(fetchedWorkers);
         setSchedule(fetchedSchedule);
         setAiProposals(fetchedProposals);
-        setCurrentUser(fetchedWorkers[0]);
       } catch (error) {
         console.error('Failed to fetch initial data:', error);
       }
     };
     fetchData();
-  }, []);
+  }, [currentPage]);
 
   // Approval and AI Resolution State
   const [pendingProposalId, setPendingProposalId] = useState<'opt_A' | 'opt_B' | null>(null);
@@ -53,8 +74,8 @@ export default function App() {
     applied: false,
     selectedOption: null
   });
-  const [scenario, setScenario] = useState<Scenario | null>(null);
   const [aiProposals, setAiProposals] = useState<AiProposal[]>([]);
+  const [scenario, _setScenario] = useState<Scenario | null>(null);
 
   // Resizable Chat Section State (Task 3)
   const [chatWidth, setChatWidth] = useState<number>(440);
@@ -106,13 +127,15 @@ export default function App() {
     window.history.pushState({}, '', page === 'login' ? '/login' : '/dashboard');
   };
 
-  const handleLogin = (role: 'worker' | 'manager', user: Worker) => {
-    setCurrentRole(role);
+  const handleLogin = (token: string, user: Worker) => {
+    localStorage.setItem('jwt', token);
+    setCurrentRole(user.id === 'w4' ? 'manager' : 'worker');
     setCurrentUser(user);
     navigateTo('dashboard');
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('jwt');
     navigateTo('login');
   };
 
@@ -186,6 +209,8 @@ export default function App() {
           shiftTime: change.newShift,
           hours: change.newHours,
           updatedByAi: true,
+          worker_id: change.workerId,
+          day: change.day,
         };
       });
 

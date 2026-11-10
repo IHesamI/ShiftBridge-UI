@@ -8,8 +8,6 @@ import {
   CheckCircle,
   Clock,
   Check,
-  ChevronRight,
-  Info
 } from 'lucide-react';
 import type { ChatMessage, AiProposal, Worker, Scenario } from '../types';
 
