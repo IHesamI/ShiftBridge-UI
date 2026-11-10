@@ -13,11 +13,13 @@ export type DayOfWeek = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Frida
 export interface ShiftInfo {
   id: string;
   type: 'regular' | 'conflict' | 'updated' | 'off';
-  shiftTime: string; // e.g. "08:00 - 16:00", "OFF", "12:00 - 16:00"
+  shiftTime: string;
   hours: number;
   note?: string;
   updatedByAi?: boolean;
-  conflictReason?: string;
+  conflict_reason?: string;
+  worker_id:string;
+  day:DayOfWeek;
 }
 
 export type ScheduleMap = Record<string, Record<DayOfWeek, ShiftInfo>>;

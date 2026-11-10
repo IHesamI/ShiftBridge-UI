@@ -23,15 +23,13 @@ export default function App() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [fetchedWorkers, fetchedSchedule, fetchedScenario, fetchedProposals] = await Promise.all([
+        const [fetchedWorkers, fetchedSchedule, fetchedProposals] = await Promise.all([
           api.getWorkers(),
           api.getSchedule(),
-          api.getScenario(),
           api.getProposals(),
         ]);
         setWorkers(fetchedWorkers);
         setSchedule(fetchedSchedule);
-        setScenario(fetchedScenario);
         setAiProposals(fetchedProposals);
         setCurrentUser(fetchedWorkers[0]);
       } catch (error) {
@@ -188,7 +186,6 @@ export default function App() {
           shiftTime: change.newShift,
           hours: change.newHours,
           updatedByAi: true,
-          note: change.note
         };
       });
 

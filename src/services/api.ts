@@ -1,29 +1,35 @@
 import type { Worker, ScheduleMap, AiProposal, Scenario } from '../types';
 
-const API_BASE = 'http://localhost:8000';
+const API_BASE = 'http://localhost:8000/data';
 
 export const api = {
   getWorkers: async (): Promise<Worker[]> => {
-    const response = await fetch(`${API_BASE}/workers`);
-    if (!response.ok) throw new Error('Failed to fetch workers');
-    return response.json();
+    try{
+      const response = await fetch(`${API_BASE}/workers`);
+      if (!response.ok) {}
+      return response.json();
+    }catch{
+      return []
+    }
   },
 
   getSchedule: async (): Promise<ScheduleMap> => {
-    const response = await fetch(`${API_BASE}/schedule`);
-    if (!response.ok) throw new Error('Failed to fetch schedule');
-    return response.json();
+    try{
+      const response = await fetch(`${API_BASE}/shifts`);
+      if (!response.ok) {}
+      return response.json();
+    }catch{
+      return []
+    }
   },
 
   getScenario: async (): Promise<Scenario> => {
-    const response = await fetch(`${API_BASE}/scenario`);
-    if (!response.ok) throw new Error('Failed to fetch scenario');
-    return response.json();
+    return 
   },
 
   getProposals: async (): Promise<AiProposal[]> => {
-    const response = await fetch(`${API_BASE}/proposals`);
-    if (!response.ok) throw new Error('Failed to fetch proposals');
+    const response = await fetch(`${API_BASE}/proposals`).catch();
+    if (!response.ok) [];
     return response.json();
   },
 

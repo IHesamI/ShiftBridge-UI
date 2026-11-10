@@ -33,7 +33,6 @@ interface SidebarChatProps {
 export const SidebarChat: React.FC<SidebarChatProps> = ({
   currentUser,
   currentRole,
-  scenario,
   aiProposals,
   onApplyProposal,
   onRequestApproval,
@@ -118,13 +117,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
     }, 1100);
   };
 
-  const quickPrompts = scenario
-    ? [
-        scenario.promptText,
-        "Show available qualified coverage for Wednesday",
-        "Evaluate overtime risk for me"
-      ]
-    : ["Show available qualified coverage"];
+
 
   return (
     <div className="flex flex-col h-full bg-white border-r border-slate-200">
@@ -363,18 +356,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           <Info className="w-3 h-3 text-slate-400" />
           Suggested Actions:
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {quickPrompts.map((prompt, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleSendPrompt(prompt)}
-              className="text-[11px] text-left bg-white border border-slate-200 hover:border-indigo-400 text-slate-700 hover:text-indigo-700 px-2.5 py-1 rounded-full transition-colors flex items-center gap-1 shadow-2xs cursor-pointer"
-            >
-              <ChevronRight className="w-3 h-3 text-indigo-500" />
-              {prompt}
-            </button>
-          ))}
-        </div>
+        
       </div>
 
       {/* Input Form */}
@@ -389,7 +371,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           type="text"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder={`Type a request (e.g. "${scenario?.promptText || '...'}")`}
+          placeholder={`Type a request (e.g)`}
           className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
         />
         <button
