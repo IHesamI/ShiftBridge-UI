@@ -51,12 +51,6 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
       // Keep existing conversation and proposals across role switches if they already exist
       if (prev.length > 0) return prev;
       return [
-        {
-          id: 'msg_welcome',
-          sender: 'assistant',
-          text: `Hello ${currentUser.name}! I am ShiftBridge AI. I continuously monitor staff availability, qualifications, and shifts to resolve sudden caregiving disruptions with zero patient coverage loss.`,
-          timestamp: 'Just now'
-        },
         
       ];
     });
@@ -161,7 +155,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
 
       {/* Messages Scroll Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((msg) => {
+        {messages.length > 0 ?messages.map((msg) => {
           if (msg.sender === 'system') {
             return (
               <div
@@ -330,7 +324,9 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
               </div>
             </div>
           );
-        })}
+        }):<div className='border p-4 py-8 border-gray-200 rounded-lg items-center text-center text-gray-400'>
+          <p>Start To chat with ShiftBridge</p>
+          </div>}
 
         {/* Simulated Typing Indicator */}
         {isTyping && (
@@ -350,14 +346,6 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Quick Prompt Chips */}
-      <div className="px-4 py-2 border-t border-slate-100 bg-slate-50/50">
-        <div className="flex items-center gap-1.5 text-[11px] text-slate-400 font-medium mb-1.5">
-          <Info className="w-3 h-3 text-slate-400" />
-          Suggested Actions:
-        </div>
-        
-      </div>
 
       {/* Input Form */}
       <form
