@@ -1,10 +1,11 @@
-import type { Worker, ScheduleMap, AiProposal, Scenario } from '../types';
+import type { Worker, ScheduleMap, AiProposal, Scenario, ShiftInfo } from '../types';
 
 const API_BASE = 'http://localhost:8000/data';
 const AUTH_BASE = 'http://localhost:8000/auth';
 
 export const api = {
-  login: async (credentials: { username: string; password: string }): Promise<{ token: string; user: Worker }> => {
+  getToken() { return localStorage.getItem('jwt'); },
+  login: async (credentials: { username: string; password: string }): Promise<{ access_token: string; }> => {
     const response = await fetch(`${AUTH_BASE}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -23,22 +24,24 @@ export const api = {
   },
 
   getWorkers: async (): Promise<Worker[]> => {
-    try{
-      const response = await fetch(`${API_BASE}/workers`);
-      if (!response.ok) {}
+    try {
+      const response = await fetch(`${API_BASE}/workers`, {
+        headers: { 'Authorization': `Bearer ${api.getToken()}` },
+      });
+      if (!response.ok) { }
       return response.json();
-    }catch{
+    } catch {
       return []
     }
   },
 
-  getSchedule: async (): Promise<ScheduleMap> => {
-    try{
+  getSchedule: async (): Promise<ShiftInfo[]> => {
+    try {
       const response = await fetch(`${API_BASE}/shifts`);
-      if (!response.ok) {}
+      if (!response.ok) { }
       return response.json();
-    }catch{
-      return {};
+    } catch {
+      return [];
     }
   },
 

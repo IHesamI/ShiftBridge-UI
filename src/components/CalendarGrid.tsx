@@ -12,7 +12,7 @@ import { DAYS_OF_WEEK } from '../types';
 
 interface CalendarGridProps {
   workers: Worker[];
-  schedule: ScheduleMap;
+  schedule: ShiftInfo[];
   selectedDay?: DayOfWeek;
   onSelectShift?: (worker: Worker, day: DayOfWeek, shift: ShiftInfo) => void;
   appliedProposalTitle?: string | null;
@@ -206,37 +206,37 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       {/* Grid Container */}
       <div className="flex-1 overflow-x-auto overflow-y-auto">
         <table className="w-full min-w-[960px] border-collapse bg-white text-left">
-            {/* Header Days Row */}
-            <thead className="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-700">
-              <tr>
-                <th className="py-3 px-4 text-xs font-bold uppercase tracking-wider w-64 border-r border-slate-200">
-                  Worker / Qualifications
-                </th>
-                {DAYS_OF_WEEK.map((day: DayOfWeek) => {
-                  return (
-                    <th
-                      key={day}
-                      className={`py-3 px-2 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-200 last:border-r-0`}
-                    >
-                      <div className="flex flex-col items-center">
-                        <span>{day}</span>
-                      </div>
-                    </th>
-                  );
-                })}
-                <th className="py-3 px-3 text-center text-xs font-bold uppercase tracking-wider w-20">
-                  Hours
-                </th>
-              </tr>
-            </thead>
+          {/* Header Days Row */}
+          <thead className="sticky top-0 bg-slate-100/95 backdrop-blur-xs z-10 border-b border-slate-200 text-slate-700">
+            <tr>
+              <th className="py-3 px-4 text-xs font-bold uppercase tracking-wider w-64 border-r border-slate-200">
+                Worker / Qualifications
+              </th>
+              {DAYS_OF_WEEK.map((day: DayOfWeek) => {
+                return (
+                  <th
+                    key={day}
+                    className={`py-3 px-2 text-center text-xs font-bold uppercase tracking-wider border-r border-slate-200 last:border-r-0`}
+                  >
+                    <div className="flex flex-col items-center">
+                      <span>{day}</span>
+                    </div>
+                  </th>
+                );
+              })}
+              <th className="py-3 px-3 text-center text-xs font-bold uppercase tracking-wider w-20">
+                Hours
+              </th>
+            </tr>
+          </thead>
 
           {/* Workers Schedule Rows */}
           <tbody className="divide-y divide-slate-200 text-xs">
             {filteredWorkers.map((worker) => {
 
-              const workerScheduleMap = schedule[worker.id] || {};
+              const workerScheduleMap = schedule.filter(item => item.worker_id == worker.id) || [];
               const currentTotalHours = DAYS_OF_WEEK.reduce((total: number, day: DayOfWeek) => {
-                const shift = workerScheduleMap[day];
+                const shift = workerScheduleMap.find(item => item.day == day);
                 return total + (shift ? shift.hours : 0);
               }, 0);
 
@@ -273,7 +273,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   </td>
 
                   {DAYS_OF_WEEK.map((day: DayOfWeek) => {
-                    const shift:ShiftInfo = workerScheduleMap[day] || {
+                    const shift: ShiftInfo = workerScheduleMap.find(item=>item.day==day) || {
                       id: `${worker.id}-${day}`,
                       type: 'off',
                       shiftTime: 'OFF',
@@ -296,13 +296,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   {/* Weekly Total Hours */}
                   <td className="py-2.5 px-3 text-center border-l border-slate-100 font-bold">
                     <span
-                      className={`inline-block px-2 py-1 rounded-md text-xs ${
-                        currentTotalHours > worker.maxHours
+                      className={`inline-block px-2 py-1 rounded-md text-xs ${currentTotalHours > worker.maxHours
                           ? 'bg-rose-100 text-rose-800'
                           : currentTotalHours === worker.maxHours
-                          ? 'bg-slate-100 text-slate-800'
-                          : 'bg-indigo-50 text-indigo-700'
-                      }`}
+                            ? 'bg-slate-100 text-slate-800'
+                            : 'bg-indigo-50 text-indigo-700'
+                        }`}
                     >
                       {currentTotalHours}h / {worker.maxHours}h
                     </span>

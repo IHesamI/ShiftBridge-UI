@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Worker, ScheduleMap, AiProposal, Scenario } from './types';
+import type { Worker, ScheduleMap, AiProposal, Scenario, ShiftInfo } from './types';
 import { api } from './services/api';
 import { AuthCard } from './components/AuthCard';
 import { Header } from './components/Header';
@@ -39,7 +39,7 @@ export default function App() {
 
   // Core Schedule State
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [schedule, setSchedule] = useState<ScheduleMap>({});
+  const [schedule, setSchedule] = useState<ShiftInfo[]>([]);
 
   useEffect(() => {
     if (currentPage !== 'dashboard') return;
@@ -127,8 +127,10 @@ export default function App() {
     window.history.pushState({}, '', page === 'login' ? '/login' : '/dashboard');
   };
 
-  const handleLogin = (token: string, user: Worker) => {
+  const handleLogin = async (token: string) => {
     localStorage.setItem('jwt', token);
+    console.error(token);
+    const user = await api.getMe(token)
     setCurrentRole(user.id === 'w4' ? 'manager' : 'worker');
     setCurrentUser(user);
     navigateTo('dashboard');
@@ -233,7 +235,7 @@ export default function App() {
   };
 
   if (currentPage === 'login') {
-    return <AuthCard onLogin={handleLogin} workers={workers} />;
+    return <AuthCard onLogin={handleLogin} />;
   }
 
   if (!currentUser) {

@@ -1,28 +1,40 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, ArrowRight, Calendar } from 'lucide-react';
+import { ShieldCheck, UserCheck, ArrowRight, Calendar, Lock, Mail } from 'lucide-react';
 import type { Worker } from '../types';
+import { api } from '../services/api';
 
 interface AuthCardProps {
-  onLogin: (token: string, worker: Worker) => void;
-  workers: Worker[];
+  onLogin: (token: string) => void;
 }
 
-export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
+export const AuthCard: React.FC<AuthCardProps> = ({
+  onLogin,
+}) => {
   const [activeTab, setActiveTab] = useState<'worker' | 'manager'>('worker');
-  const [selectedWorkerId, setSelectedWorkerId] = useState<string>('w1'); // Default Sarah
-  const [selectedManagerId, setSelectedManagerId] = useState<string>('w4'); // Default Marcus Vance
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const sarah = workers.find((w) => w.id === 'w1') || workers[0];
-  const marcus = workers.find((w) => w.id === 'w4') || workers[1];
-
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (activeTab === 'worker') {
-      const worker = workers.find((w) => w.id === selectedWorkerId) || sarah;
-      onLogin('dummy-token', worker);
-    } else {
-      const manager = workers.find((w) => w.id === selectedManagerId) || marcus;
-      onLogin('dummy-token', manager);
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const response =await  api.login({ username: email, password })
+
+
+      if (!response) {
+        throw new Error('Authentication failed. Please check your credentials.');
+      }
+      localStorage.setItem('token',response.access_token)
+
+      onLogin(response.access_token);
+    } catch (err: any) {
+      setError(err.message || 'An error occurred while connecting to the server.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,6 +52,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
           </span>
           ShiftBridge
         </h1>
+        <p className="text-slate-400 text-sm mt-2">Sign in to your account</p>
       </div>
 
       {/* Main Authentication Card */}
@@ -48,125 +61,90 @@ export const AuthCard: React.FC<AuthCardProps> = ({ onLogin, workers }) => {
         <div className="p-2 bg-slate-100/80 border-b border-slate-200/80 grid grid-cols-2 gap-1.5">
           <button
             type="button"
-            onClick={() => setActiveTab('worker')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'worker'
+            onClick={() => {
+              setActiveTab('worker');
+              setError(null);
+            }}
+            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${activeTab === 'worker'
                 ? 'bg-white text-indigo-700 shadow-sm font-semibold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
+              }`}
           >
             <UserCheck className="w-4 h-4" />
-            Worker View
+            Worker Sign In
           </button>
           <button
             type="button"
-            onClick={() => setActiveTab('manager')}
-            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${
-              activeTab === 'manager'
+            onClick={() => {
+              setActiveTab('manager');
+              setError(null);
+            }}
+            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${activeTab === 'manager'
                 ? 'bg-white text-indigo-700 shadow-sm font-semibold'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
+              }`}
           >
             <ShieldCheck className="w-4 h-4" />
-            Manager View
+            Manager Sign In
           </button>
         </div>
 
         <div className="p-6 sm:p-8">
-          {/* Quick Action One-Click Logins */}
-          <div className="mb-6">
-            <div className="text-xs uppercase tracking-wider font-semibold text-slate-400 mb-2.5">
-              Quick Test Personas
+          {error && (
+            <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+              {error}
             </div>
-            {activeTab === 'worker' ? (
-              <button
-                type="button"
-                onClick={() => onLogin('dummy-token', sarah)}
-                className="w-full group text-left p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/60 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={sarah.avatar}
-                    alt={sarah.name}
-                    className="w-10 h-10 rounded-full border-2 border-indigo-200 object-cover"
-                  />
-                  <div>
-                    <div className="font-semibold text-sm text-slate-900 group-hover:text-indigo-950 flex items-center gap-1.5">
-                      {sarah.name}
-                      <span className="text-[10px] uppercase font-bold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">
-                        Has Conflict
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500">{sarah.role} • {sarah.department}</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-indigo-500 group-hover:translate-x-1 transition-transform" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onLogin('dummy-token', marcus)}
-                className="w-full group text-left p-3.5 rounded-xl border border-indigo-100 bg-indigo-50/60 hover:bg-indigo-100/70 hover:border-indigo-300 transition-all flex items-center justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <img
-                    src={marcus.avatar}
-                    alt={marcus.name}
-                    className="w-10 h-10 rounded-full border-2 border-indigo-200 object-cover"
-                  />
-                  <div>
-                    <div className="font-semibold text-sm text-slate-900 group-hover:text-indigo-950 flex items-center gap-1.5">
-                      {marcus.name}
-                      <span className="text-[10px] uppercase font-bold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded">
-                        Approver
-                      </span>
-                    </div>
-                    <div className="text-xs text-slate-500">{marcus.role} • {marcus.department}</div>
-                  </div>
-                </div>
-                <ArrowRight className="w-4 h-4 text-indigo-500 group-hover:translate-x-1 transition-transform" />
-              </button>
-            )}
-          </div>
-
-          <div className="relative flex items-center my-6">
-            <div className="flex-grow border-t border-slate-200" />
-            <span className="flex-shrink mx-3 text-xs text-slate-400 uppercase font-medium">Or select any worker</span>
-            <div className="flex-grow border-t border-slate-200" />
-          </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleFormSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                {activeTab === 'worker' ? 'Select Worker Profile' : 'Select Manager Profile'}
+                Email Address
               </label>
-              <select
-                value={activeTab === 'worker' ? selectedWorkerId : selectedManagerId}
-                onChange={(e) =>
-                  activeTab === 'worker'
-                    ? setSelectedWorkerId(e.target.value)
-                    : setSelectedManagerId(e.target.value)
-                }
-                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
-              >
-                {workers.map((worker) => (
-                  <option key={worker.id} value={worker.id}>
-                    {worker.name} — {worker.role} ({worker.department})
-                  </option>
-                ))}
-              </select>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Mail className="w-4 h-4" />
+                </span>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder={activeTab === 'worker' ? 'worker@company.com' : 'manager@company.com'}
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+                Password
+              </label>
+              <div className="relative">
+                <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                  <Lock className="w-4 h-4" />
+                </span>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
+                />
+              </div>
             </div>
 
             <button
               type="submit"
-              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-sm font-semibold shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              disabled={isLoading}
+              className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 text-white text-sm font-semibold shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
-              Enter Dashboard as {activeTab === 'worker' ? 'Worker' : 'Manager'}
-              <ArrowRight className="w-4 h-4" />
+              {isLoading ? 'Signing in...' : `Sign In as ${activeTab === 'worker' ? 'Worker' : 'Manager'}`}
+              {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>
-
         </div>
       </div>
     </div>
