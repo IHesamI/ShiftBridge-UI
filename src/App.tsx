@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Worker, ScheduleMap, AiProposal, Scenario, ShiftInfo } from './types';
+import type { Worker, ShiftInfo, ProposalType } from './types';
 import { api } from './services/api';
 import { AuthCard } from './components/AuthCard';
 import { Header } from './components/Header';
@@ -27,7 +27,7 @@ export default function App() {
         try {
             const user = await api.getMe(token);
             setCurrentUser(user);
-            setCurrentRole(user.id === 'w4' ? 'manager' : 'worker'); // Simple logic for demo
+            setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker'); // Simple logic for demo
             navigateTo('dashboard');
         } catch (error) {
             localStorage.removeItem('jwt');
@@ -60,8 +60,6 @@ export default function App() {
     fetchData();
   }, [currentPage]);
 
-  // Approval and AI Resolution State
-  const [pendingProposalId, setPendingProposalId] = useState<'opt_A' | 'opt_B' | null>(null);
   const [appliedProposalTitle, setAppliedProposalTitle] = useState<string | null>(null);
   const [approvalStatus, setApprovalStatus] = useState<{
     workerApproved: boolean;
@@ -74,8 +72,7 @@ export default function App() {
     applied: false,
     selectedOption: null
   });
-  const [aiProposals, setAiProposals] = useState<AiProposal[]>([]);
-  const [scenario, _setScenario] = useState<Scenario | null>(null);
+  const [aiProposals, setAiProposals] = useState<ProposalType[]>([]);
 
   // Resizable Chat Section State (Task 3)
   const [chatWidth, setChatWidth] = useState<number>(440);
@@ -131,7 +128,8 @@ export default function App() {
     localStorage.setItem('jwt', token);
     console.error(token);
     const user = await api.getMe(token)
-    setCurrentRole(user.id === 'w4' ? 'manager' : 'worker');
+    setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker');
+    console.error(user)
     setCurrentUser(user);
     navigateTo('dashboard');
   };
@@ -164,7 +162,6 @@ export default function App() {
       ]);
       setWorkers(fetchedWorkers);
       setSchedule(fetchedSchedule);
-      setPendingProposalId(null);
       setAppliedProposalTitle(null);
       setApprovalStatus({
         workerApproved: false,
@@ -177,63 +174,6 @@ export default function App() {
     }
   };
 
-  // Worker initiates or signs off on approval
-  const handleRequestApproval = (proposal: AiProposal) => {
-    setPendingProposalId(proposal.optionId);
-    setApprovalStatus((prev) => ({
-      ...prev,
-      workerApproved: true,
-      selectedOption: proposal.optionId
-    }));
-  };
-
-  // Manager approves and immediately applies schedule updates to the calendar
-  const handleApplyProposal = (proposal: AiProposal) => {
-    setPendingProposalId(proposal.optionId);
-    setApprovalStatus({
-      workerApproved: true,
-      managerApproved: true,
-      applied: true,
-      selectedOption: proposal.optionId
-    });
-    setAppliedProposalTitle(proposal.title);
-
-    // Apply schedule changes immutably
-    setSchedule((prevSchedule) => {
-      const nextSchedule: ScheduleMap = JSON.parse(JSON.stringify(prevSchedule));
-
-      proposal.scheduleChanges.forEach((change) => {
-        if (!nextSchedule[change.workerId]) return;
-
-        nextSchedule[change.workerId][change.day] = {
-          id: `updated-${change.workerId}-${change.day}-${Date.now()}`,
-          type: change.newShift === 'OFF' ? 'off' : 'updated',
-          shiftTime: change.newShift,
-          hours: change.newHours,
-          updatedByAi: true,
-          worker_id: change.workerId,
-          day: change.day,
-        };
-      });
-
-      return nextSchedule;
-    });
-
-    // Update worker current hours based on proposal metrics
-    setWorkers((prevWorkers) =>
-      prevWorkers.map((w) => {
-        if (proposal.optionId === 'opt_A') {
-          if (w.id === 'w1') return { ...w, currentHours: 40 };
-          if (w.id === 'w2') return { ...w, currentHours: 40 };
-        } else if (proposal.optionId === 'opt_B') {
-          if (w.id === 'w1') return { ...w, currentHours: 36 };
-          if (w.id === 'w3') return { ...w, currentHours: 36 };
-        }
-        return w;
-      })
-    );
-  };
-
   if (currentPage === 'login') {
     return <AuthCard onLogin={handleLogin} />;
   }
@@ -244,7 +184,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
-      {/* Top Application Navigation */}
       <Header
         currentUser={currentUser}
         currentRole={currentRole}
@@ -254,23 +193,17 @@ export default function App() {
         isResolved={approvalStatus.applied}
       />
 
-      {/* Main Split Screen Layout */}
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-[calc(100vh-64px)]">
-        {/* Left Section: ShiftBridge AI Assistant (Resizable on desktop) */}
         <div
           style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${chatWidth}px` : undefined }}
-          className="w-full lg:w-auto lg:flex-shrink-0 h-[480px] lg:h-full border-b lg:border-b-0 relative"
+          className="w-full lg:w-auto lg:shrink-0 h-120 lg:h-full border-b lg:border-b-0 relative"
           data-testid="sidebar-chat-container"
         >
           <SidebarChat
+          key={aiProposals.length}
             currentUser={currentUser}
             currentRole={currentRole}
-            scenario={scenario}
             aiProposals={aiProposals}
-            onApplyProposal={handleApplyProposal}
-            onRequestApproval={handleRequestApproval}
-            pendingProposalId={pendingProposalId}
-            approvalStatus={approvalStatus}
             onResetChat={handleResetData}
           />
         </div>
@@ -283,7 +216,7 @@ export default function App() {
           aria-orientation="vertical"
           tabIndex={0}
           title="Drag to resize chat panel"
-          className="hidden lg:flex w-2 hover:w-2.5 bg-slate-200/80 hover:bg-indigo-400 active:bg-indigo-600 transition-all cursor-col-resize items-center justify-center flex-shrink-0 z-20 group select-none"
+          className="hidden lg:flex w-2 hover:w-2.5 bg-slate-200/80 hover:bg-indigo-400 active:bg-indigo-600 transition-all cursor-col-resize items-center justify-center shrink-0 z-20 group select-none"
         >
           <div className="w-0.5 h-8 bg-slate-400 group-hover:bg-white rounded-full transition-colors" />
         </div>

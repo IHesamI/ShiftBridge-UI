@@ -21,7 +21,7 @@ interface CalendarGridProps {
 }
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({
-  workers,
+  workers = [],
   schedule,
   appliedProposalTitle,
   currentUser,
@@ -35,15 +35,15 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     day: DayOfWeek;
     shift: ShiftInfo;
   } | null>(null);
-
+  console.error(currentRole)
   // Filter workers based on current role and selection
   // Task 1: For the worker don't show the details of other workers, only show his/her own working schedule.
   // And the manager must be able to select each worker or all of them at once.
   const roleFilteredWorkers = currentRole === 'worker'
-    ? (currentUser ? workers.filter((w) => w.id === currentUser.id) : workers.slice(0, 1))
-    : (selectedWorkerId === 'ALL' ? workers : workers.filter((w) => w.id === selectedWorkerId));
-
-  const filteredWorkers = roleFilteredWorkers.filter((worker) => {
+    ? (currentUser ? workers?.filter((w) => w.id === currentUser.id) : workers?.slice(0, 1))
+    : (selectedWorkerId === 'ALL' ? workers : workers?.filter((w) => w.id === selectedWorkerId));
+  console.error(roleFilteredWorkers)
+  const filteredWorkers = roleFilteredWorkers?.filter((worker) => {
     const matchesQuery =
       worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,10 +76,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               <Sparkles className="w-2.5 h-2.5 text-emerald-700" />
               Updated via AI
             </span>
-            <span className="text-[10px] font-bold text-emerald-800">{shift.hours}h</span>
+            <span className="text-[10px] font-bold text-emerald-800">{shift.length}h</span>
           </div>
           <div className="my-1">
-            <div className="text-xs font-bold text-emerald-950">{shift.shiftTime}</div>
+            <div className="text-xs font-bold text-emerald-950">{shift.start_time}</div>
             {shift.note && (
               <div className="text-[10px] text-emerald-800 font-medium truncate">{shift.note}</div>
             )}
@@ -97,9 +97,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
       <div className="h-full w-full rounded-lg bg-indigo-50/60 border border-indigo-100 hover:border-indigo-300 p-2 text-indigo-950 flex flex-col justify-between transition-all group-hover:shadow-xs">
         <div className="flex items-center justify-between text-[10px] text-indigo-700 font-medium">
           <span>{day.slice(0, 3)} Shift</span>
-          <span className="font-semibold">{shift.hours}h</span>
+          <span className="font-semibold">{shift.length}h</span>
         </div>
-        <div className="text-xs font-bold text-slate-800 my-0.5">{shift.shiftTime}</div>
+        <div className="text-xs font-bold text-slate-800 my-0.5">{shift.start_time}</div>
         <div className="text-[10px] text-slate-500 truncate">Standard Roster</div>
       </div>
     );
@@ -185,22 +185,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
         <span className="font-semibold text-slate-700 flex items-center gap-1">
           <Briefcase className="w-3.5 h-3.5 text-slate-500" /> Shift Legend:
         </span>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-indigo-50 border border-indigo-200" />
-          <span>Standard Shift</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-amber-100 border border-amber-400" />
-          <span className="font-medium text-amber-800">Conflict Flag</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-emerald-100 border border-emerald-400" />
-          <span className="font-medium text-emerald-800">ShiftBridge AI Swap Applied</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="w-3 h-3 rounded bg-slate-200 border border-slate-300" />
-          <span>Rest / Scheduled OFF</span>
-        </div>
+
       </div>
 
       {/* Grid Container */}
@@ -237,7 +222,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
               const workerScheduleMap = schedule.filter(item => item.worker_id == worker.id) || [];
               const currentTotalHours = DAYS_OF_WEEK.reduce((total: number, day: DayOfWeek) => {
                 const shift = workerScheduleMap.find(item => item.day == day);
-                return total + (shift ? shift.hours : 0);
+                return total + (shift ? shift.length : 0);
               }, 0);
 
               return (
@@ -256,11 +241,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                       <div className="min-w-0">
                         <div className="font-bold text-slate-900 truncate flex items-center gap-1.5">
                           {worker.name}
-                          {worker.id === 'w1' && (
-                            <span className="text-[9px] bg-amber-100 text-amber-800 font-bold px-1 rounded border border-amber-200">
-                              Affected
-                            </span>
-                          )}
+
                         </div>
                         <div className="text-[11px] text-slate-500 font-medium truncate">
                           {worker.role}
@@ -273,11 +254,11 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   </td>
 
                   {DAYS_OF_WEEK.map((day: DayOfWeek) => {
-                    const shift: ShiftInfo = workerScheduleMap.find(item=>item.day==day) || {
+                    const shift: ShiftInfo = workerScheduleMap.find(item => item.day == day) || {
                       id: `${worker.id}-${day}`,
                       type: 'off',
-                      shiftTime: 'OFF',
-                      hours: 0,
+                      start_time: 'OFF',
+                      length: 0,
                       worker_id: worker.id,
                       day: day
                     };
@@ -297,10 +278,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
                   <td className="py-2.5 px-3 text-center border-l border-slate-100 font-bold">
                     <span
                       className={`inline-block px-2 py-1 rounded-md text-xs ${currentTotalHours > worker.maxHours
-                          ? 'bg-rose-100 text-rose-800'
-                          : currentTotalHours === worker.maxHours
-                            ? 'bg-slate-100 text-slate-800'
-                            : 'bg-indigo-50 text-indigo-700'
+                        ? 'bg-rose-100 text-rose-800'
+                        : currentTotalHours === worker.maxHours
+                          ? 'bg-slate-100 text-slate-800'
+                          : 'bg-indigo-50 text-indigo-700'
                         }`}
                     >
                       {currentTotalHours}h / {worker.maxHours}h
@@ -320,8 +301,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
             <Clock className="w-4 h-4 text-indigo-600" />
             <span>
               <strong>{activeShiftDetail.worker.name}</strong> on{' '}
-              <strong>{activeShiftDetail.day}</strong>: {activeShiftDetail.shift.shiftTime} (
-              {activeShiftDetail.shift.hours} hrs)
+              <strong>{activeShiftDetail.day}</strong>: {activeShiftDetail.shift.start_time} (
+              {activeShiftDetail.shift.length} hrs)
             </span>
           </div>
           <button

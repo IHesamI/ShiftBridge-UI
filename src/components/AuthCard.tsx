@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, UserCheck, ArrowRight, Calendar, Lock, Mail } from 'lucide-react';
-import type { Worker } from '../types';
+
 import { api } from '../services/api';
 
 interface AuthCardProps {
@@ -22,8 +22,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
     setIsLoading(true);
 
     try {
-      const response =await  api.login({ username: email, password })
-
+      const response = activeTab=='manager' ? await api.loginManager({ username: email, password })  : await api.login({ username: email, password }) 
 
       if (!response) {
         throw new Error('Authentication failed. Please check your credentials.');
@@ -39,7 +38,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-indigo-950 to-slate-900 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Background ambient decorative glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/3 -translate-x-1/2 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -47,7 +46,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
       {/* Brand Header */}
       <div className="text-center mb-8 relative z-10">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight flex items-center justify-center gap-2.5">
-          <span className="p-2 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/30">
+          <span className="p-2 bg-linear-to-tr from-indigo-600 to-violet-600 rounded-xl shadow-lg shadow-indigo-500/30">
             <Calendar className="w-7 h-7 text-white" />
           </span>
           ShiftBridge
