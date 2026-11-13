@@ -7,7 +7,7 @@ import {
   Clock,
   Briefcase
 } from 'lucide-react';
-import type { Worker, DayOfWeek, ScheduleMap, ShiftInfo } from '../types';
+import type { Worker, DayOfWeek, ShiftInfo } from '../types';
 import { DAYS_OF_WEEK } from '../types';
 
 interface CalendarGridProps {
@@ -36,14 +36,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     shift: ShiftInfo;
   } | null>(null);
   console.error(currentRole)
-  // Filter workers based on current role and selection
-  // Task 1: For the worker don't show the details of other workers, only show his/her own working schedule.
-  // And the manager must be able to select each worker or all of them at once.
+
   const roleFilteredWorkers = currentRole === 'worker'
     ? (currentUser ? workers?.filter((w) => w.id === currentUser.id) : workers?.slice(0, 1))
     : (selectedWorkerId === 'ALL' ? workers : workers?.filter((w) => w.id === selectedWorkerId));
-  console.error(roleFilteredWorkers)
-  const filteredWorkers = roleFilteredWorkers?.filter((worker) => {
+
+  const filteredWorkers = roleFilteredWorkers.filter(worker => currentRole == 'worker' ? true : worker.id != currentUser?.id)?.filter((worker) => {
     const matchesQuery =
       worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       worker.role.toLowerCase().includes(searchQuery.toLowerCase()) ||

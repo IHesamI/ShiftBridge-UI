@@ -16,16 +16,6 @@ export const api = {
     return response.json();
   },
 
-  loginManager: async (credentials: { username: string; password: string }): Promise<{ access_token: string; }> => {
-    const response = await fetch(`${AUTH_BASE}/login-manager`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
-    });
-    if (!response.ok) throw new Error('Login failed');
-    return response.json();
-  },
-
   getMe: async (token: string): Promise<Worker> => {
     const response = await fetch(`${AUTH_BASE}/me`, {
       headers: { 'Authorization': `Bearer ${token}` },

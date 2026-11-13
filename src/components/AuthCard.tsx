@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, UserCheck, ArrowRight, Calendar, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Calendar, Lock, Mail } from 'lucide-react';
 
 import { api } from '../services/api';
 
@@ -10,7 +10,6 @@ interface AuthCardProps {
 export const AuthCard: React.FC<AuthCardProps> = ({
   onLogin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'worker' | 'manager'>('worker');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,7 +21,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
     setIsLoading(true);
 
     try {
-      const response = activeTab=='manager' ? await api.loginManager({ username: email, password })  : await api.login({ username: email, password }) 
+      const response = await api.login({ username: email, password }) 
 
       if (!response) {
         throw new Error('Authentication failed. Please check your credentials.');
@@ -56,37 +55,6 @@ export const AuthCard: React.FC<AuthCardProps> = ({
 
       {/* Main Authentication Card */}
       <div className="w-full max-w-md bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-slate-100 overflow-hidden relative z-10">
-        {/* Role Toggle Switch */}
-        <div className="p-2 bg-slate-100/80 border-b border-slate-200/80 grid grid-cols-2 gap-1.5">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('worker');
-              setError(null);
-            }}
-            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${activeTab === 'worker'
-                ? 'bg-white text-indigo-700 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-          >
-            <UserCheck className="w-4 h-4" />
-            Worker Sign In
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('manager');
-              setError(null);
-            }}
-            className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-sm font-medium transition-all ${activeTab === 'manager'
-                ? 'bg-white text-indigo-700 shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-              }`}
-          >
-            <ShieldCheck className="w-4 h-4" />
-            Manager Sign In
-          </button>
-        </div>
 
         <div className="p-6 sm:p-8">
           {error && (
@@ -110,7 +78,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={activeTab === 'worker' ? 'worker@company.com' : 'manager@company.com'}
+                  placeholder={'email@shiftbridge.com'}
                   className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-shadow"
                 />
               </div>
@@ -140,7 +108,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
               disabled={isLoading}
               className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 text-white text-sm font-semibold shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
-              {isLoading ? 'Signing in...' : `Sign In as ${activeTab === 'worker' ? 'Worker' : 'Manager'}`}
+              {isLoading ? 'Signing in...' : `Sign In`}
               {!isLoading && <ArrowRight className="w-4 h-4" />}
             </button>
           </form>

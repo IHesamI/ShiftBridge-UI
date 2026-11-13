@@ -1,7 +1,6 @@
 export interface Worker {
   id: string;
-  full_name?: string;
-  name?: string;
+  name: string;
   role: 'Senior RN' | 'Charge Nurse' | 'RN' | 'LPN' | 'Support Specialist';
   department: string;
   maxHours: number;

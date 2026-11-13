@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, Shield, User, ArrowLeftRight, LogOut, CheckCircle } from 'lucide-react';
+import { Calendar, Shield, User, LogOut } from 'lucide-react';
 import type { Worker } from '../types';
 
 interface HeaderProps {
@@ -16,14 +16,13 @@ export const Header: React.FC<HeaderProps> = ({
   currentRole,
   onLogout,
 }) => {
-  console.error(currentUser)
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand Logo & Tag */}
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-to-tr from-indigo-600 to-violet-600 rounded-xl text-white shadow-sm shadow-indigo-500/20">
+            <div className="p-2 bg-linear-to-tr from-indigo-600 to-violet-600 rounded-xl text-white shadow-sm shadow-indigo-500/20">
               <Calendar className="w-5 h-5" />
             </div>
             <div>
@@ -39,12 +38,12 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200/80 px-2.5 py-1.5 rounded-xl">
               <img
                 src={currentUser.avatar}
-                alt={currentUser.full_name || currentUser.name}
+                alt={currentUser.name}
                 className="w-7 h-7 rounded-full object-cover border border-slate-300"
               />
               <div className="text-left text-xs leading-tight">
                 <div className="font-semibold text-slate-900 flex items-center gap-1">
-                  {currentUser.full_name || currentUser.name}
+                  {currentUser.name}
                   {currentRole === 'manager' ? (
                     <span className="inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded bg-purple-100 text-purple-800">
                       <Shield className="w-2.5 h-2.5 mr-0.5" /> Manager

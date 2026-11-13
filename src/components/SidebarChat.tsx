@@ -25,7 +25,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
   aiProposals,
   onResetChat
 }) => {
-  const [activeTab, setActiveTab] = useState<'chat' | 'proposals'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'proposals'>(currentRole == 'manager' ? 'proposals' : 'chat');
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -126,7 +126,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
 
         {/* Tab Switcher */}
         <div className="flex bg-slate-200/70 p-1 rounded-xl">
-          <button
+          {currentRole == 'worker' && <button
             onClick={() => setActiveTab('chat')}
             className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${activeTab === 'chat'
               ? 'bg-white text-indigo-600 shadow-xs'
@@ -134,7 +134,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
               }`}
           >
             <MessageSquare className="w-3.5 h-3.5" /> Chat Sidebar
-          </button>
+          </button>}
           <button
             onClick={() => setActiveTab('proposals')}
             className={`flex-1 flex items-center justify-center gap-2 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${activeTab === 'proposals'
@@ -142,7 +142,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
               : 'text-slate-600 hover:text-slate-900'
               }`}
           >
-            <ListFilter className="w-3.5 h-3.5" /> All Proposals ({allProposals.length})
+            <ListFilter className="w-3.5 h-3.5" /> Proposals ({allProposals.length})
           </button>
         </div>
       </div>
