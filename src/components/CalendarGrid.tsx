@@ -35,7 +35,6 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
     day: DayOfWeek;
     shift: ShiftInfo;
   } | null>(null);
-  console.error(currentRole)
 
   const roleFilteredWorkers = currentRole === 'worker'
     ? (currentUser ? workers?.filter((w) => w.id === currentUser.id) : workers?.slice(0, 1))
@@ -305,7 +304,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({
           </div>
           <button
             onClick={() => setActiveShiftDetail(null)}
-            className="text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded text-xs"
+            className="text-slate-400 hover:text-slate-700 px-2 py-0.5 rounded text-xs cursor-pointer"
           >
             Dismiss
           </button>

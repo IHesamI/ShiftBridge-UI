@@ -49,7 +49,6 @@ export   const ProposalCard = ({ proposal,currentRole,handleApproveProposal }: {
           {!isCurrentRoleApproved ? (
             <button
               onClick={() => {
-                console.error(proposal);
                 handleApproveProposal(proposal.id);
               }}
               className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"

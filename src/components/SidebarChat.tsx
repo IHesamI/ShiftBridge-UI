@@ -31,7 +31,6 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const fetched = useRef(false);
   const [allProposals, setAllProposals] = useState<ProposalType[]>(aiProposals);
-  console.error(allProposals)
   useEffect(() => {
     const fetchProposals = async () => {
       if (fetched.current) return;
@@ -258,13 +257,21 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
                 handleApproveProposal={handleApproveProposal}
               />
             ))
-          ) : (
-            <div className="text-center py-12 text-slate-400 text-xs">
-              No proposals generated yet. Chat with ShiftBridge AI to generate shift proposals.
-            </div>
-          )}
+          ) : <div>
+            {
+              currentRole == 'manager' ?
+                (<div className="text-center py-12 text-slate-400 text-xs">
+                  Nothing to approve.
+                </div>)
+                : (<div className="text-center py-12 text-slate-400 text-xs">
+                  No proposals generated yet. Chat with ShiftBridge AI to generate shift proposals.
+                </div>)
+            }
+          </div>
+          }
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
