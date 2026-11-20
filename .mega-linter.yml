@@ -26,3 +26,6 @@ SHOW_ELAPSED_TIME: true
 
 # Uncomment if you want MegaLinter to detect errors but not block CI to pass
 # DISABLE_ERRORS: true
+COPYPASTE_JSCPD_ARGUMENTS: --ignore "**/package-lock.json,**/package.json"
+SPELL_LYCHEE_ARGUMENTS: --exclude-path package-lock.json --exclude patreon.com
+TYPESCRIPT_STANDARD_ARGUMENTS: --project tsconfig.node.json

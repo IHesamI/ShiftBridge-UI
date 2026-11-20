@@ -1,4 +1,7 @@
-import js from '@eslint/js'
+import { createRequire } from 'node:module'
+const require = createRequire(import.meta.url)
+const js = require('@eslint/js')
+
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
