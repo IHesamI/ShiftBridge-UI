@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+megalinter-reports/
+*.megalinter-setup.bak
