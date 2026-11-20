@@ -29,3 +29,14 @@ SHOW_ELAPSED_TIME: true
 COPYPASTE_JSCPD_ARGUMENTS: --ignore "**/package-lock.json,**/package.json"
 SPELL_LYCHEE_ARGUMENTS: --exclude-path package-lock.json --exclude patreon.com
 TYPESCRIPT_STANDARD_ARGUMENTS: --project tsconfig.node.json
+VALIDATE_ALL_CODEBASE: true
+
+JAVASCRIPT_ES_PRE_COMMANDS:
+  - command: "npm install eslint-plugin-react-hooks"
+    cwd: "root"
+    continue_if_failed: false
+
+TYPESCRIPT_ES_PRE_COMMANDS:
+  - command: "npm install eslint-plugin-react-hooks"
+    cwd: "root"
+    continue_if_failed: false
