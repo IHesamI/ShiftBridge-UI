@@ -93,14 +93,19 @@ export const api = {
     return response.json();
   },
 
-  approveProposal: async (proposalId: string): Promise<ProposalType> => {
+  approveProposal: async (proposalId: string): Promise<ProposalType & {
+    deleted?: boolean,
+    message: string,
+    success: boolean,
+    new_shift: ShiftInfo,
+  }> => {
     const response = await fetch(`${API_BASE}approve`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${api.getToken()}`,
       },
-      body: JSON.stringify({ proposal_id: proposalId}),
+      body: JSON.stringify({ proposal_id: proposalId }),
     });
 
     if (!response.ok) throw new Error('Failed to approve proposal');

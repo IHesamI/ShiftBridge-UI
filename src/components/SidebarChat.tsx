@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import {
   Sparkles,
   Send,
@@ -7,7 +7,7 @@ import {
   MessageSquare,
   ListFilter
 } from 'lucide-react';
-import type { ChatMessage, Worker, ProposalType } from '../types';
+import type { ChatMessage, Worker, ProposalType, ShiftInfo } from '../types';
 import { api } from '../services/api';
 import { ProposalCard } from './ProposalCard';
 
@@ -17,13 +17,15 @@ interface SidebarChatProps {
   currentRole: 'worker' | 'manager';
   aiProposals: ProposalType[];
   onResetChat: () => void;
+  setSchedule: React.Dispatch<React.SetStateAction<ShiftInfo[]>>
 }
 
 export const SidebarChat: React.FC<SidebarChatProps> = ({
   currentUser,
   currentRole,
   aiProposals,
-  onResetChat
+  onResetChat,
+  setSchedule,
 }) => {
   const [activeTab, setActiveTab] = useState<'chat' | 'proposals'>(currentRole == 'manager' ? 'proposals' : 'chat');
   const [inputText, setInputText] = useState('');
@@ -31,6 +33,10 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const fetched = useRef(false);
   const [allProposals, setAllProposals] = useState<ProposalType[]>(aiProposals);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   useEffect(() => {
     const fetchProposals = async () => {
       if (fetched.current) return;
@@ -43,7 +49,21 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
     }
   }, [activeTab]);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Auto-scroll to bottom when a message is added or typing indicator toggles
+  useLayoutEffect(() => {
+    if (activeTab !== 'chat') return;
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, isTyping, activeTab]);
+
+  // Auto-resize the textarea between 1 and 5 rows
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const lineHeight = 20; // approx px per row for text-sm
+    const maxHeight = lineHeight * 5;
+    el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+  }, [inputText]);
 
   const handleSendPrompt = async (text: string) => {
     if (!text.trim()) return;
@@ -60,6 +80,9 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
 
     setMessages((prev) => [...prev, userMessage]);
     setInputText('');
+    // Reset textarea height after clearing
+    if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
     try {
       const aiResponse = await api.sendMessage(text, messages.map(item => ({ "role": item.sender, "content": item.text })));
 
@@ -81,27 +104,43 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
   const handleApproveProposal = async (proposalId: string) => {
     try {
       const updatedProposal = await api.approveProposal(proposalId);
-      // Update local proposals list state
-      setAllProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+      if (updatedProposal.deleted) {
+        alert(updatedProposal.message);
+        setAllProposals(prev => prev.filter(p => p.id !== proposalId));
+        setMessages(prev => prev.map(msg => {
+          if (msg.proposal && (msg.proposal as unknown as ProposalType).proposal_id === proposalId) {
+            return { ...msg, proposal: null as any };
+          }
+          return msg;
+        }));
+        setSchedule(shifts => shifts.map(shift => shift.id == updatedProposal?.new_shift?.id ? updatedProposal.new_shift : shift))
+      } else {
+        setAllProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+        setMessages(prev => prev.map(msg => {
+          if (msg.proposal && (msg.proposal as unknown as ProposalType).proposal_id === proposalId) {
+            return { ...msg, proposal: updatedProposal as any };
+          }
+          return msg;
+        }));
+      }
 
-      // Update chat messages proposal states if present
-      setMessages(prev => prev.map(msg => {
-        if (msg.proposal && (msg.proposal as unknown as ProposalType).id === proposalId) {
-          return { ...msg, proposal: updatedProposal as any };
-        }
-        return msg;
-      }));
     } catch (error) {
       alert('Failed to approve proposal');
     }
   };
 
-  // Reusable Proposal Card Component with dynamic state UI
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Enter sends, Shift+Enter makes a new line
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendPrompt(inputText);
+    }
+  };
 
   return (
-    <div className="flex flex-col h-full bg-white border-r border-slate-200">
+    <div className="flex flex-col h-full min-h-0 bg-white border-r border-slate-200">
       {/* Chat Header & Tab Switcher */}
-      <div className="p-4 border-b border-slate-200 bg-slate-50/70 flex flex-col gap-3">
+      <div className="shrink-0 p-4 border-b border-slate-200 bg-slate-50/70 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-linear-to-tr from-indigo-600 to-violet-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/25">
@@ -149,7 +188,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
       {/* Main Content Area based on Active Tab */}
       {activeTab === 'chat' ? (
         <>
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
             {messages.length > 0 ? messages.map((msg) => {
               if (msg.sender === 'system') {
                 return (
@@ -183,7 +222,7 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
                         : 'bg-slate-100 text-slate-800 rounded-bl-none border border-slate-200/60 shadow-2xs'
                         }`}
                     >
-                      <p>{msg.text}</p>
+                      <p className="whitespace-pre-wrap break-words">{msg.text}</p>
                     </div>
 
                     {msg.proposal && (
@@ -226,14 +265,16 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
               e.preventDefault();
               handleSendPrompt(inputText);
             }}
-            className="p-3 border-t border-slate-200 bg-white flex items-center gap-2"
+            className="shrink-0 p-3 border-t border-slate-200 items-center bg-white flex gap-2"
           >
-            <input
-              type="text"
+            <textarea
+              ref={textareaRef}
+              rows={2}
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Type a request (e.g. swap shift)..."
-              className="flex-1 px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all"
+              className="flex-1 resize-none overflow-hidden px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all leading-5"
             />
             <button
               type="submit"
@@ -245,13 +286,14 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           </form>
         </>
       ) : (
-        <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
+        <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50/50">
           <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2 px-1">
             All Generated Proposals ({allProposals.length})
           </div>
           {allProposals.length > 0 ? (
             allProposals.map((prop, idx) => (
-              <ProposalCard key={prop.id || idx}
+              <ProposalCard 
+              key={prop.proposal_id || idx}
                 proposal={prop}
                 currentRole={currentRole}
                 handleApproveProposal={handleApproveProposal}
