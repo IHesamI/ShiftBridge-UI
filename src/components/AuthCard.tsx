@@ -15,7 +15,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
     setError(null);
     setIsLoading(true);
@@ -26,7 +26,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
       if (!response) {
         throw new Error('Authentication failed. Please check your credentials.');
       }
-      localStorage.setItem('token',response.access_token)
+      localStorage.setItem('jwt',response.access_token)
 
       onLogin(response.access_token);
     } catch (err: any) {
@@ -64,7 +64,7 @@ export const AuthCard: React.FC<AuthCardProps> = ({
           )}
 
           {/* Form */}
-          <form onSubmit={handleFormSubmit} className="space-y-4">
+          <form className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
                 Email Address
@@ -104,9 +104,9 @@ export const AuthCard: React.FC<AuthCardProps> = ({
             </div>
 
             <button
-              type="submit"
               disabled={isLoading}
               className="w-full py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-50 text-white text-sm font-semibold shadow-md shadow-indigo-600/25 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              onClick={handleFormSubmit}
             >
               {isLoading ? 'Signing in...' : `Sign In`}
               {!isLoading && <ArrowRight className="w-4 h-4" />}

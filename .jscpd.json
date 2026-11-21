@@ -10,6 +10,7 @@
     "**/.github/**",
     "**/.idea/**",
     "**/report/**",
-    "**/*.svg"
+    "**/*.svg",
+    "**/.github/workflows/mega-linter.yml"
   ]
 }

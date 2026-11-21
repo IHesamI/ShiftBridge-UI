@@ -18,21 +18,21 @@ export default function App() {
 
   useEffect(() => {
     const checkAuth = async () => {
-        const token = localStorage.getItem('jwt');
-        if (!token) {
-            navigateTo('login');
-            return;
-        }
+      const token = localStorage.getItem('jwt');
+      if (!token) {
+        navigateTo('login');
+        return;
+      }
 
-        try {
-            const user = await api.getMe(token);
-            setCurrentUser(user);
-            setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker'); // Simple logic for demo
-            navigateTo('dashboard');
-        } catch (error) {
-            localStorage.removeItem('jwt');
-            navigateTo('login');
-        }
+      try {
+        const user = await api.getMe(token);
+        setCurrentUser(user);
+        setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker'); // Simple logic for demo
+        navigateTo('dashboard');
+      } catch (error) {
+        localStorage.removeItem('jwt');
+        navigateTo('login');
+      }
     };
     checkAuth();
   }, []);
@@ -57,7 +57,8 @@ export default function App() {
         console.error('Failed to fetch initial data:', error);
       }
     };
-    fetchData();
+    if (localStorage.getItem('jwt'))
+      fetchData();
   }, [currentPage]);
 
   const [appliedProposalTitle, setAppliedProposalTitle] = useState<string | null>(null);
@@ -126,7 +127,7 @@ export default function App() {
 
   const handleLogin = async (token: string) => {
     localStorage.setItem('jwt', token);
-    console.error(token);
+
     const user = await api.getMe(token)
     setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker');
     console.error(user)
@@ -183,7 +184,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen h-[100vh] flex flex-col bg-slate-50 text-slate-900 font-sans">
       <Header
         currentUser={currentUser}
         currentRole={currentRole}
@@ -193,15 +194,16 @@ export default function App() {
         isResolved={approvalStatus.applied}
       />
 
-      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden h-[calc(100vh-64px)]">
+      <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         <div
           style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${chatWidth}px` : undefined }}
-          className="w-full lg:w-auto lg:shrink-0 h-120 lg:h-full border-b lg:border-b-0 relative"
+
           data-testid="sidebar-chat-container"
         >
           <SidebarChat
-          key={aiProposals.length}
+            key={aiProposals.length}
             currentUser={currentUser}
+            setSchedule={setSchedule}
             currentRole={currentRole}
             aiProposals={aiProposals}
             onResetChat={handleResetData}
