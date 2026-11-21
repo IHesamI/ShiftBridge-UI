@@ -13,7 +13,7 @@ export   const ProposalCard = ({ proposal,currentRole,handleApproveProposal }: {
             <span className="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg">
               <Calendar className="w-4 h-4" />
             </span>
-            <span className="text-xs font-bold text-slate-800">Proposal #{proposal.proposal_id || proposal.id}</span>
+            <span className="text-xs font-bold text-slate-800">Proposal #{proposal.id}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium flex items-center gap-1 ${proposal.isManagerApproved ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>
@@ -50,7 +50,7 @@ export   const ProposalCard = ({ proposal,currentRole,handleApproveProposal }: {
             <button
               onClick={() => {
                 console.error(proposal)
-                handleApproveProposal(proposal.proposal_id! || proposal.id!);
+                handleApproveProposal(proposal.id!);
               }}
               className="px-3 py-1.5 text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-2xs transition-colors flex items-center gap-1 cursor-pointer"
             >

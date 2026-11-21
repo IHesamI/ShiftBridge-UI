@@ -52,7 +52,6 @@ export interface ChatMessage {
   proposal?:ProposalType;
 }
 export type ProposalType= {
-      "proposal_id"?: string;
       "id"?: string;
       "worker_id": string;
       "new_shift_data": {

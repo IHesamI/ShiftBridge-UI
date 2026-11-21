@@ -103,32 +103,57 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
 
   const handleApproveProposal = async (proposalId: string) => {
     try {
-      const updatedProposal = await api.approveProposal(proposalId);
-      if (updatedProposal.deleted) {
-        alert(updatedProposal.message);
+      const result = await api.approveProposal(proposalId);
+      result.message && alert(result.message);
+      // Fully approved: proposal was deleted and a shift was created/updated
+      if (result.deleted) {
+
+        // Remove the proposal from the list
         setAllProposals(prev => prev.filter(p => p.id !== proposalId));
-        setMessages(prev => prev.map(msg => {
-          if (msg.proposal && (msg.proposal as unknown as ProposalType).proposal_id === proposalId) {
-            return { ...msg, proposal: null as any };
-          }
-          return msg;
-        }));
-        setSchedule(shifts => shifts.map(shift => shift.id == updatedProposal?.new_shift?.id ? updatedProposal.new_shift : shift))
-      } else {
-        setAllProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
-        setMessages(prev => prev.map(msg => {
-          if (msg.proposal && (msg.proposal as unknown as ProposalType).proposal_id === proposalId) {
-            return { ...msg, proposal: updatedProposal as any };
-          }
-          return msg;
-        }));
+
+        // Clear the proposal from any chat message that referenced it
+        setMessages(prev =>
+          prev.map(msg =>
+            msg.proposal && (msg.proposal as unknown as ProposalType).id === proposalId
+              ? { ...msg, proposal: null as any }
+              : msg
+          )
+        );
+
+        // Sync the schedule with the created/updated shift
+        const newShift = result.new_shift;
+        if (newShift) {
+          setSchedule(shifts => {
+            const exists = shifts.some(s => s.id === newShift.id);
+            return exists
+              ? shifts.map(s => (s.id === newShift.id ? newShift : s))
+              : [...shifts, newShift];
+          });
+        }
+        return;
       }
 
+      // Partial approval: backend returned the updated Proposal object
+      // (isWorkerApproved / isManagerApproved toggled, still pending the other party)
+      const updated = (result.proposal || {} as any);
+
+      setAllProposals(prev =>
+        prev.map(p => (p.id === updated?.id ? { ...p, ...updated } : p))
+      );
+
+      setMessages(prev =>
+        prev.map(msg => {
+          if (msg.proposal && (msg.proposal as unknown as ProposalType).id === updated?.id) {
+            return { ...msg, proposal: { ...(msg.proposal as unknown as ProposalType), ...updated } as any };
+          }
+          return msg;
+        })
+      );
     } catch (error) {
+      console.error(error);
       alert('Failed to approve proposal');
     }
   };
-
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     // Enter sends, Shift+Enter makes a new line
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -292,8 +317,8 @@ export const SidebarChat: React.FC<SidebarChatProps> = ({
           </div>
           {allProposals.length > 0 ? (
             allProposals.map((prop, idx) => (
-              <ProposalCard 
-              key={prop.proposal_id || idx}
+              <ProposalCard
+                key={prop.id || idx}
                 proposal={prop}
                 currentRole={currentRole}
                 handleApproveProposal={handleApproveProposal}

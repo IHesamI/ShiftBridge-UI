@@ -93,8 +93,10 @@ export const api = {
     return response.json();
   },
 
-  approveProposal: async (proposalId: string): Promise<ProposalType & {
-    deleted?: boolean,
+  approveProposal: async (proposalId: string): Promise<
+  {
+     proposal?:ProposalType
+  deleted?: boolean,
     message: string,
     success: boolean,
     new_shift: ShiftInfo,

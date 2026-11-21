@@ -57,7 +57,8 @@ export default function App() {
         console.error('Failed to fetch initial data:', error);
       }
     };
-    fetchData();
+    if (localStorage.getItem('jwt'))
+      fetchData();
   }, [currentPage]);
 
   const [appliedProposalTitle, setAppliedProposalTitle] = useState<string | null>(null);
@@ -126,7 +127,7 @@ export default function App() {
 
   const handleLogin = async (token: string) => {
     localStorage.setItem('jwt', token);
-    console.error(token);
+
     const user = await api.getMe(token)
     setCurrentRole(user.id.startsWith('m') ? 'manager' : 'worker');
     console.error(user)
@@ -183,7 +184,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900 font-sans">
+    <div className="min-h-screen h-[100vh] flex flex-col bg-slate-50 text-slate-900 font-sans">
       <Header
         currentUser={currentUser}
         currentRole={currentRole}
@@ -196,7 +197,7 @@ export default function App() {
       <main className="flex-1 flex flex-col lg:flex-row overflow-hidden">
         <div
           style={{ width: typeof window !== 'undefined' && window.innerWidth >= 1024 ? `${chatWidth}px` : undefined }}
-          
+
           data-testid="sidebar-chat-container"
         >
           <SidebarChat
