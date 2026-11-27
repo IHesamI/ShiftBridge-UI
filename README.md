@@ -1,200 +1,71 @@
-# React + TypeScript + Vite
+# ShiftBridge Frontend Overview
 
-A modern React application built with **TypeScript** and **Vite**, featuring hot module replacement (HMR) and ESLint for code quality.
-
----
-
-## Prerequisites
-
-Before you begin, make sure you have the following installed:
-
-- **Node.js** (v18.0.0 or higher recommended) — [Download](https://nodejs.org/)
-- **npm** (comes with Node.js) or **pnpm** / **yarn** if you prefer
-
-To verify your installation:
-
-```bash
-node -v
-npm -v
-```
-
----
-
-## Getting Started
-
-### 1. Clone the repository
-
-```bash
-git clone <your-repository-url>
-cd <your-project-name>
-```
-
-### 2. Install dependencies
-
-Using npm:
-
-```bash
-npm install
-```
-
-Or with pnpm / yarn:
-
-```bash
-pnpm install
-# or
-yarn install
-```
-
-### 3. Start the development server
-
-```bash
-npm run dev
-```
-
-This will start the Vite dev server (usually at `http://localhost:5173`). The page will automatically reload when you make changes thanks to HMR.
-
----
-
-## Available Scripts
-
-| Command | Description |
-| --- | --- |
-| `npm run dev` | Starts the development server with HMR |
-| `npm run build` | Type-checks and builds the app for production into the `dist/` folder |
-| `npm run preview` | Locally previews the production build |
-| `npm run lint` | Runs ESLint to check for code issues |
-
----
-
-## Project Structure
-
-```
-.
-├── public/               # Static assets
-├── src/                  # Application source code
-│   ├── assets/           # Images, fonts, etc.
-│   ├── App.tsx           # Root component
-│   ├── main.tsx          # App entry point
-│   └── vite-env.d.ts     # Vite type declarations
-├── index.html            # HTML entry point
-├── eslint.config.js      # ESLint configuration
-├── tsconfig.json         # TypeScript configuration
-├── vite.config.ts        # Vite configuration
-└── package.json          # Project metadata and scripts
-```
-
----
-
-## Production Build
-
-To create an optimized production build:
-
-```bash
-npm run build
-```
-
-The output will be generated in the `dist/` directory. To preview it locally:
-
-```bash
-npm run preview
-```
-
----
-
-## Vite Plugins
-
-Two official React plugins are available for Fast Refresh:
-
-- **[@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react)** — Uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs/) with [rolldown-vite](https://vite.dev/guide/rolldown))
-- **[@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc)** — Uses [SWC](https://swc.rs/) for faster refresh
-
-The default template uses `@vitejs/plugin-react`. You can swap to the SWC variant for faster builds if needed.
-
-> ⚠️ **Note:** The React Compiler is currently **not compatible** with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for progress.
-
----
-
-## ESLint Configuration
-
-The template comes with a basic ESLint setup. For production applications, we recommend enabling **type-aware lint rules** for stricter type safety:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Replace tseslint.configs.recommended with:
-      tseslint.configs.recommendedTypeChecked,
-      // Or for stricter rules:
-      // tseslint.configs.strictTypeChecked,
-      // Optionally, add stylistic rules:
-      // tseslint.configs.stylisticTypeChecked,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
-
-### React-specific lint rules
-
-For React-specific linting, install the plugins:
-
-```bash
-npm install -D eslint-plugin-react-x eslint-plugin-react-dom
-```
-
-Then update `eslint.config.js`:
-
-```js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      reactX.configs['recommended-typescript'],
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-])
-```
+The ShiftBridge frontend is a **React + TypeScript** single-page application (SPA) styled with **Tailwind CSS** and **Lucide React** icons. It provides an interactive, role-based interface for workers and managers to view weekly schedules, chat with an AI scheduling assistant, and approve shift change proposals.
 
 ---
 
 ## Tech Stack
 
-- **React** — UI library
-- **TypeScript** — Type-safe JavaScript
-- **Vite** — Fast build tool and dev server
-- **ESLint** — Linting and code quality
+- **Framework:** React (with Hooks)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **Icons:** `lucide-react`
+- **State & Routing:** Local React state + `window.history.pushState` / `popstate` (for `/login` and `/dashboard`)
+- **Authentication:** JWT stored in `localStorage` (`jwt`)
 
 ---
 
-## Troubleshooting
+## Application Architecture (`App.tsx`)
 
-- **Port already in use?** Vite will automatically try the next available port, or you can specify one with `npm run dev -- --port 3000`.
-- **Dependencies acting up?** Delete `node_modules` and `package-lock.json`, then reinstall with `npm install`.
-- **Type errors during build?** Run `npm run build` to trigger type-checking, or check `tsconfig.json` for correct paths.
+`App.tsx` serves as the root controller, managing:
+
+- **Authentication & Routing:** Checks for a `jwt` in `localStorage` on mount, fetches the current user via `api.getMe(token)`, and routes between `/login` (`AuthCard`) and `/dashboard`.
+- **Role Detection:** Determines whether the logged-in user is a `manager` or `worker` (currently based on `user.id.startsWith('m')`).
+- **Global State:** Holds `workers`, `schedule` (`ShiftInfo[]`), and `aiProposals` (`ProposalType[]`), fetched in parallel when entering the dashboard.
+- **Resizable Layout:** Implements a split-pane desktop layout with a draggable vertical resizer (`chatWidth` clamped between `300px` and `750px`) separating the left `SidebarChat` and the right `CalendarGrid`.
 
 ---
 
-## License
+## Key Components
 
-This project is open source and available under the [MIT License](LICENSE).
+### 1. `AuthCard.tsx`
+
+- Renders the login screen with email and password inputs.
+- Submits credentials to `api.login()`, stores the returned `access_token` in `localStorage`, and triggers `onLogin()`.
+- Displays loading states and inline error messages.
+
+### 2. `Header.tsx`
+
+- Sticky top navigation bar displaying the **ShiftBridge** brand, the logged-in user's avatar, name, role badge (`Manager` or `Worker`), and a logout button.
+
+### 3. `SidebarChat.tsx`
+
+- **Dual-Tab Interface:**
+  - **Chat Sidebar** (workers only): Allows workers to chat with the ShiftBridge AI assistant (`api.sendMessage()`), auto-scrolls to new messages, auto-resizes the textarea (1–5 rows), and renders inline `ProposalCard` components when the AI generates a shift proposal.
+  - **Proposals Tab**: Lists all pending proposals (`api.getProposals()`) for both workers and managers.
+- **Approval Syncing:** Handles `handleApproveProposal()`—if a proposal is fully approved (`result.deleted === true`), it removes the proposal from the list and updates `schedule` in `App.tsx` with `result.new_shift`. If partially approved, it updates the proposal's approval flags in place.
+
+### 4. `ProposalCard.tsx`
+
+- Displays a single shift change proposal, comparing **Current** vs. **Proposed** day, start time, and length, along with any optional `note`.
+- Shows manager/worker approval status and an **Approve** button if the current user's role hasn't approved yet.
+
+### 5. `CalendarGrid.tsx`
+
+- **7-Day Schedule Table:** Displays Monday–Sunday shifts alongside weekly total hours (`totalHours / maxHours`) with color-coded hour badges.
+- **Role-Based Views:**
+  - **Worker View:** Shows only the logged-in worker's personal weekly schedule.
+  - **Manager View:** Shows all staff (excluding the manager) with filters for **Worker**, **Search Query** (name/role/department), and **Role** (`Senior RN`, `Charge Nurse`, `RN`, `LPN`, `Support Specialist`).
+- **Shift States:** Visually distinguishes between `off`, standard roster shifts, and AI-updated shifts (`updated` / `updatedByAi`). Clicking any cell opens a bottom `ShiftDetailBar` with full shift details.
+
+---
+
+## API Integration (`services/api.ts`)
+
+All backend communication is centralized in `api.ts`, targeting `http://localhost:8000`:
+
+- **Auth (`/auth`):** `login()`, `getMe()`
+- **Data (`/data`):** `getWorkers()`, `getSchedule()`, `getProposals()`, `approveProposal()`
+- **Chat (`/chat`):** `sendMessage()`
+
+Protected requests automatically attach the `Authorization: Bearer <jwt>` header using `api.getToken()`.
